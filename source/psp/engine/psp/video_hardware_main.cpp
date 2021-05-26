@@ -68,6 +68,12 @@ vec3_t 		r_origin;
 
 vec3_t		modelorg, r_entorigin;
 
+struct vertex
+{
+	float u, v;
+	unsigned int color;
+	float x, y, z;
+};
 
 int			r_visframecount;	// bumped when going to a new PVS
 int			r_framecount;		// used for dlight push checking
@@ -952,14 +958,24 @@ float old_i_model_transform;
 GL_DrawAliasFrame
 =============
 */
-void GL_DrawAliasFrame (aliashdr_t *paliashdr, int posenum, float apitch, float ayaw)
+void OLD_GL_DrawAliasFrame (aliashdr_t *paliashdr, int posenum, float apitch, float ayaw)
 {
-	float 	l,r,g,b;
+	struct vertex
+	{
+		float u, v;
+		unsigned int color;
+		float x, y, z;
+	};
+	
 	trivertx_t	*verts;
+	float 	l,r,g,b;
+	
 	int		*order;
 	int		count;
-	int prim;
+	int 	prim;
+	
 	prim = GU_TRIANGLE_FAN;
+	
 	if(r_showtris.value)
 	{
 		sceGuDisable(GU_TEXTURE_2D);
@@ -969,43 +985,44 @@ void GL_DrawAliasFrame (aliashdr_t *paliashdr, int posenum, float apitch, float 
 	lastposenum = posenum;
 	verts = (trivertx_t *)((byte *)paliashdr + paliashdr->posedata);
 	verts += posenum * paliashdr->poseverts;
+	
 	order = (int *)((byte *)paliashdr + paliashdr->commands);
-
-	struct vertex
-	{
-		float u, v;
-		unsigned int color;
-		float x, y, z;
-	};
-
-	//for blubs's alternate BuildTris: 1) Disable while(1) loop 2) Disable the break; 3) replace GU_TRIANGLE_STRIP with GU_TRIANGLES
+	
 	while (1)
 	{
-		// get the vertex count and primitive type
+		
+		// count = amount of vertex per poly
 		count = *order++;
+		
+		// if we get 0 no more vertex left from model
 		if (!count)
-			break;		// done
+		{
+			//Con_Printf("%d ", count);
+			//Con_Printf(" done\n");
+			break;
+		}
 
+		// convert count from negative to positive, why is order negative?
 		if(prim != GU_LINE_STRIP)
 		{
 			if (count < 0)
 			{
 				prim = GU_TRIANGLE_FAN;
 				count = -count;
+				//Con_Printf("%d ", count);
 			}
 			else
 			{
 				prim = GU_TRIANGLE_STRIP;
-				//prim = GU_TRIANGLES; //used for blubs' alternate BuildTris with one continual triangle list
 			}
 		}
 
-		// Allocate the vertices.
+		// Allocate memory for one polygon
 		vertex* const out = static_cast<vertex*>(sceGuGetMemory(sizeof(vertex) * count));
-		//================================================================== fps: 50 ===============================================
+		
+		// Set each vertex of the polygon with correct data
 		for (int vertex_index = 0; vertex_index < count; ++vertex_index)
 		{
-			// texture coordinates come from the draw list
 			out[vertex_index].u = ((float *)order)[0];
 			out[vertex_index].v = ((float *)order)[1];
 			order += 2;
@@ -1029,42 +1046,54 @@ void GL_DrawAliasFrame (aliashdr_t *paliashdr, int posenum, float apitch, float 
 
 			++verts;
 		}
+
+		// Send one polygon to render
 		sceGuDrawArray(prim, GU_TEXTURE_32BITF | GU_VERTEX_32BITF | GU_COLOR_8888, count, 0, out);
 		
-		//================================================================== fps: 50 ===============================================
 	}
+
 	if(r_showtris.value)
-	{
 		sceGuEnable(GU_TEXTURE_2D);
-	}
+
 	sceGuColor(0xffffffff);
+	
 }
 
 /*
 =============
-GL_DrawAliasBlendedFrame
+GL_DrawAliasFrame
 
 fenix@io.com: model animation interpolation
 =============
 */
-void GL_DrawAliasBlendedFrame (aliashdr_t *paliashdr, int pose1, int pose2, float blend, float apitch, float ayaw)
-{
-	float       l,r,g,b;
+struct vertexContainer {
+	int amount;
+	int prim = GU_TRIANGLE_FAN;
+	vertex *verticies = new vertex[amount]; 
+};
+
+//vertex out[1024] = {0};
+
+void GL_DrawAliasFrame (aliashdr_t *paliashdr, int pose1, int pose2, float blend, float apitch, float ayaw, bool lerping)
+{	
 	trivertx_t* verts1;
 	trivertx_t* verts2;
+	float       l,r,g,b;
+	
 	int*        order;
 	int         count;
-	vec3_t      d;
-	vec3_t       point;
-	int prim;
+	int 		prim;
+	
 	prim = GU_TRIANGLE_FAN;
+	
+	vec3_t  	d;
+
 	if(r_showtris.value)
 	{
 		sceGuDisable(GU_TEXTURE_2D);
 		prim = GU_LINE_STRIP;
 	}
 
-	lastposenum0 = pose1;
 	lastposenum  = pose2;
 
 	verts1 = (trivertx_t *)((byte *)paliashdr + paliashdr->posedata);
@@ -1075,21 +1104,15 @@ void GL_DrawAliasBlendedFrame (aliashdr_t *paliashdr, int pose1, int pose2, floa
 
 	order = (int *)((byte *)paliashdr + paliashdr->commands);
 
-	struct vertex
-	{
-		float u, v;
-		unsigned int color;
-		float x, y, z;
-	};
-
-	//for blubs's alternate BuildTris: 1) Disable while(1) loop 2) Disable the break; 3) replace GU_TRIANGLE_STRIP with GU_TRIANGLES
 	while (1)
 	{
-		// get the vertex count and primitive type
+		// count = amount of vertex per poly
 		count = *order++;
 
+		// if we get 0 no more vertex left from model
 		if (!count) break;
 
+		// convert count from negative to positive, why is count negative?
 		if(prim != GU_LINE_STRIP)
 		{
 			if (count < 0)
@@ -1104,19 +1127,25 @@ void GL_DrawAliasBlendedFrame (aliashdr_t *paliashdr, int pose1, int pose2, floa
 			}
 		}
 
-		// Allocate the vertices.
-		vertex* const out = static_cast<vertex*>(sceGuGetMemory(sizeof(vertex) * count));
+		// Allocate memory for one polygon
+		//vertex* const out = static_cast<vertex*>(sceGuGetMemory(sizeof(vertex) * count));
 
+		// Set each vertex of the polygon with correct data
+		/*
 		for (int vertex_index = 0; vertex_index < count; ++vertex_index)
 		{
-
-			// texture coordinates come from the draw list
 			out[vertex_index].u = ((float *)order)[0];
 			out[vertex_index].v = ((float *)order)[1];
-
 			order += 2;
-			d[0] = shadedots[verts2->lightnormalindex] - shadedots[verts1->lightnormalindex];
-			l = shadedots[verts1->lightnormalindex] + (blend * d[0]);
+
+	
+			if (lerping)
+			{
+				d[0] = shadedots[verts2->lightnormalindex] - shadedots[verts1->lightnormalindex];
+				l = shadedots[verts1->lightnormalindex] + (blend * d[0]);
+			}
+			else
+				l = shadedots[verts1->lightnormalindex];
 
 			r = l * lightcolor[0];
 			g = l * lightcolor[1];
@@ -1124,28 +1153,41 @@ void GL_DrawAliasBlendedFrame (aliashdr_t *paliashdr, int pose1, int pose2, floa
 
 			if(r > 1)
 				r = 1;
-			 if(g > 1)
+			if(g > 1)
 				g = 1;
-			 if(b > 1)
+			if(b > 1)
 				b = 1;
 
-			VectorSubtract(verts2->v, verts1->v, d);
 
 			// blend the vertex positions from each frame together
-			point[0] = verts1->v[0] + (blend * d[0]);
-			point[1] = verts1->v[1] + (blend * d[1]);
-			point[2] = verts1->v[2] + (blend * d[2]);
+			if (lerping)
+			{
+				VectorSubtract(verts2->v, verts1->v, d);
 
-			out[vertex_index].x = point[0];
-			out[vertex_index].y = point[1];
-			out[vertex_index].z = point[2];
+				out[vertex_index].x = verts1->v[0] + (blend * d[0]);
+				out[vertex_index].y = verts1->v[1] + (blend * d[1]);
+				out[vertex_index].z = verts1->v[2] + (blend * d[2]);
+			}
+			else
+			{
+				out[vertex_index].x = verts1->v[0];
+				out[vertex_index].y = verts1->v[1];
+				out[vertex_index].z = verts1->v[2];
+			}
+			
+			
 			out[vertex_index].color = GU_COLOR(r, g, b, 1.0f);
 
 			++verts1;
 			++verts2;
 		}
+		
+		
+		// Send one polygon to render
 		sceGuDrawArray(prim, GU_TEXTURE_32BITF | GU_VERTEX_32BITF | GU_COLOR_8888, count, 0, out);
+		*/
 	}
+
 	if(r_showtris.value)
 	{
 		sceGuEnable(GU_TEXTURE_2D);
@@ -1175,8 +1217,10 @@ void GL_DrawAliasInterpolatedFrame (aliashdr_t *paliashdr, int posenum, int oldp
 	}
 
 	lastposenum = posenum;
+	
 	interpolations = interp/r_ipolations.value;
-	verts = (trivertx_t *)((byte *)paliashdr + paliashdr->posedata);
+	int tempInter = currententity->interpolation;
+
 	oldverts = verts;
 	verts += posenum * paliashdr->poseverts;
 	if (oldposenum >= 0)
@@ -1483,7 +1527,7 @@ R_SetupAliasFrame
 
 =================
 */
-void R_SetupAliasFrame (int frame, aliashdr_t *paliashdr, float apitch, float ayaw)
+void OLD_R_SetupAliasFrame (int frame, aliashdr_t *paliashdr, float apitch, float ayaw)
 {
 	int				pose, numposes;
 	float			interval;
@@ -1503,20 +1547,21 @@ void R_SetupAliasFrame (int frame, aliashdr_t *paliashdr, float apitch, float ay
 		pose += (int)(cl.time / interval) % numposes;
 	}
 
-	GL_DrawAliasFrame (paliashdr, pose, apitch, ayaw);
+	OLD_GL_DrawAliasFrame (paliashdr, pose, apitch, ayaw);
 }
 
 /*
 =================
-R_SetupAliasBlendedFrame
+R_SetupAliasFrame
 
 fenix@io.com: model animation interpolation
 =================
 */
 //double t1, t2, t3;
 
-void R_SetupAliasBlendedFrame (int frame, aliashdr_t *paliashdr, entity_t* e, float apitch, float ayaw)
+void R_SetupAliasFrame (int frame, aliashdr_t *paliashdr, entity_t* e, float apitch, float ayaw)
 {
+	bool lerping;
 	int   pose;
 	int   numposes;
 	float blend;
@@ -1532,26 +1577,12 @@ void R_SetupAliasBlendedFrame (int frame, aliashdr_t *paliashdr, entity_t* e, fl
 
 	if (numposes > 1)
 	{
-		//Con_Printf("numposes (%i) > 1: %s, %i\n", numposes, e->model->name, frame); FIXME-Jukkiwashere (not sure if this was something you were working on blubs)
-  		//if (e->iframetime)
-		//	e->frame_interval = e->iframetime;
-		//else
 		e->frame_interval = paliashdr->frames[frame].interval;
   		pose += (int)(cl.time / e->frame_interval) % numposes;
   	}
 	else
 	{
-		/* One tenth of a second is a good for most Quake animations.
-		If the nextthink is longer then the animation is usually meant to pause
-		(e.g. check out the shambler magic animation in shambler.qc).  If its
-		shorter then things will still be smoothed partly, and the jumps will be
-		less noticable because of the shorter time.  So, this is probably a good
-		assumption. */
-		//Jukki, except that this is not good for us. We need to control it better
-		//if (e->iframetime)
-		//	e->frame_interval = e->iframetime;
-		//else
-			e->frame_interval = 0.1;
+		e->frame_interval = 0.1;
 	}
 
 	if (e->pose2 != pose)
@@ -1563,13 +1594,13 @@ void R_SetupAliasBlendedFrame (int frame, aliashdr_t *paliashdr, entity_t* e, fl
 	}
 	else
 		blend = (realtime - e->frame_start_time) / e->frame_interval;
-	// wierd things start happening if blend passes 1
+
 	if (cl.paused || blend > 1) blend = 1;
 
-	if (blend == 1)
-		GL_DrawAliasFrame (paliashdr, pose, apitch, ayaw);
-	else
-		GL_DrawAliasBlendedFrame (paliashdr, e->pose1, e->pose2, blend, apitch, ayaw);
+	if (blend != 1)
+		lerping = true;
+
+	GL_DrawAliasFrame (paliashdr, e->pose1, e->pose2, blend, apitch, ayaw, lerping);
 }
 
 /*
@@ -2007,7 +2038,7 @@ void R_DrawZombieLimb (entity_t *e,int which)
 
 	if (r_i_model_animation.value)
 	{
-		R_SetupAliasBlendedFrame (e->frame, paliashdr, e, e->angles[0], e->angles[1]);
+		R_SetupAliasFrame (e->frame, paliashdr, e, e->angles[0], e->angles[1]);
 	}
 	else
 	{
@@ -2034,7 +2065,7 @@ void R_DrawZombieLimb (entity_t *e,int which)
 			R_SetupAliasInterpolatedFrame (e->current_frame,e->last_frame,e->interpolation,paliashdr);
 		}
 		else
-			R_SetupAliasFrame (e->frame, paliashdr, e->angles[0], e->angles[1]);
+			R_SetupAliasFrame (e->frame, paliashdr, e, e->angles[0], e->angles[1]);
 	}
 	//t3 += Sys_FloatTime();
 	sceGumPopMatrix();
@@ -2119,7 +2150,7 @@ void R_DrawTransparentAliasModel (entity_t *e)
 	//Rendering block
 	if (r_i_model_animation.value)
 	{
-		R_SetupAliasBlendedFrame (e->frame, paliashdr, e, e->angles[0], e->angles[1]);
+		R_SetupAliasFrame (e->frame, paliashdr, e, e->angles[0], e->angles[1]);
 	}
 	else
 	{
@@ -2146,7 +2177,7 @@ void R_DrawTransparentAliasModel (entity_t *e)
 			R_SetupAliasInterpolatedFrame (e->current_frame,e->last_frame,e->interpolation,paliashdr);
 		}
 		else
-			R_SetupAliasFrame (e->frame, paliashdr, e->angles[0], e->angles[1]);
+			R_SetupAliasFrame (e->frame, paliashdr, e, e->angles[0], e->angles[1]);
 	}
 	sceGumPopMatrix();
 	sceGumUpdateMatrix();
@@ -2416,7 +2447,7 @@ void R_DrawAliasModel (entity_t *e)
 	//Rendering block
 	if (r_i_model_animation.value)
 	{
-		R_SetupAliasBlendedFrame (e->frame, paliashdr, e, e->angles[0], e->angles[1]);
+		R_SetupAliasFrame (e->frame, paliashdr, e, e->angles[0], e->angles[1]);
 	}
 	else
 	{
@@ -2443,7 +2474,7 @@ void R_DrawAliasModel (entity_t *e)
 			R_SetupAliasInterpolatedFrame (e->current_frame,e->last_frame,e->interpolation,paliashdr);
 		}
 		else
-			R_SetupAliasFrame (e->frame, paliashdr, e->angles[0], e->angles[1]);
+			R_SetupAliasFrame (e->frame, paliashdr, e, e->angles[0], e->angles[1]);
 	}
 	sceGumPopMatrix();
 	sceGumUpdateMatrix();
@@ -3769,9 +3800,11 @@ void R_DrawViewModel (void)
 		if (currententity->model->aliastype == ALIASTYPE_MD2)
 			R_DrawMD2Model (currententity);
 		else
+		{
 			R_DrawAliasModel (currententity);
 			r_i_model_transform.value = old_i_model_transform;
 			break;
+		}
 		case mod_md3:
 			R_DrawQ3Model (currententity);
 			break;
@@ -4100,7 +4133,8 @@ void R_RenderScene (void)
 	S_ExtraUpdate ();	// don't let sound get messed up if going slow
 	
 	// drawentitiesonlist
-	if (r_drawentities.value) {
+	// if (r_drawentities.value) {
+	if (0) {
 
 		// draw sprites seperately, because of alpha blending
 		for (i=0 ; i<cl_numvisedicts ; i++)
@@ -4268,6 +4302,10 @@ void R_RenderView (void)
 	c_brush_polys = 0;
 	c_alias_polys = 0;
     c_md3_polys = 0;
+	
+	int x, y;
+	char st[80],st1[80], st2[80];
+	x = vid.width - strlen(st1) * 8;
 
 	mirror = qfalse;
 
@@ -4285,13 +4323,4 @@ void R_RenderView (void)
 	R_PolyBlend ();
 
     //Crow_bar fixed
-	if (r_speeds.value)
-	{
-		Con_Printf ("%4i world poly\n",  c_brush_polys);
-		Con_Printf ("%4i entity poly\n",  c_alias_polys);
-		Con_Printf ("%4i CPU Percentage\n", (int)PFL_GetCPUPercentage()/(1000/game_fps));
-		Con_Printf ("%4i GPU Percentage\n", (int)PFL_GetGPUPercentage()/(1000/game_fps));
-		Con_Printf ("%4i CPU Time (ms)\n", (int)PFL_GetCPUTime());
-		Con_Printf ("%4i GPU Time (ms)\n", (int)PFL_GetGPUTime());
-	}
 }

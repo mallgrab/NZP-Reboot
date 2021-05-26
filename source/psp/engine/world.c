@@ -19,6 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 // world.c -- world query functions
 
+#include <openTri/triVMath_vfpu.h>
 #include "quakedef.h"
 
 /*#ifdef PSP_VFPU
@@ -640,8 +641,10 @@ qboolean SV_RecursiveHullCheck (hull_t *hull, int num, float p1f, float p2f, vec
 	}
 	else
 	{
-		t1 = DotProduct (plane->normal, p1) - plane->dist;
-		t2 = DotProduct (plane->normal, p2) - plane->dist;
+		t1 = triVec3Dot (plane->normal, p1) - plane->dist;
+		t2 = triVec3Dot (plane->normal, p2) - plane->dist;
+		//t1 = DotProduct (plane->normal, p1) - plane->dist;
+		//t2 = DotProduct (plane->normal, p2) - plane->dist;
 	}
 
 #if 1
@@ -667,8 +670,10 @@ qboolean SV_RecursiveHullCheck (hull_t *hull, int num, float p1f, float p2f, vec
 		frac = 1;
 
 	midf = p1f + (p2f - p1f)*frac;
-	for (i=0 ; i<3 ; i++)
-		mid[i] = p1[i] + frac*(p2[i] - p1[i]);
+	triVec3Lerp(mid, p1, p2, frac);
+	
+	//for (i=0 ; i<3 ; i++)
+	//	mid[i] = p1[i] + frac*(p2[i] - p1[i]);
 
 	side = (t1 < 0);
 
@@ -694,6 +699,7 @@ qboolean SV_RecursiveHullCheck (hull_t *hull, int num, float p1f, float p2f, vec
 	}
 	else
 	{
+		//triVec3Sub(vec3_origin, plane->normal, trace->plane.normal);
 		VectorSubtract (vec3_origin, plane->normal, trace->plane.normal);
 		trace->plane.dist = -plane->dist;
 	}
@@ -710,8 +716,10 @@ qboolean SV_RecursiveHullCheck (hull_t *hull, int num, float p1f, float p2f, vec
 			return false;
 		}
 		midf = p1f + (p2f - p1f)*frac;
-		for (i=0 ; i<3 ; i++)
-			mid[i] = p1[i] + frac*(p2[i] - p1[i]);
+		
+		triVec3Lerp(mid, p1, p2, frac);
+		//for (i=0 ; i<3 ; i++)
+		//	mid[i] = p1[i] + frac*(p2[i] - p1[i]);
 	}
 
 	trace->fraction = midf;
@@ -772,7 +780,7 @@ trace_t SV_ClipMoveToEntity (edict_t *ent, vec3_t start, vec3_t mins, vec3_t max
 
 
 // trace a line through the apropriate clipping hull
-	SV_RecursiveHullCheck (hull, hull->firstclipnode, 0, 1, start_l, end_l, &trace);
+	//SV_RecursiveHullCheck (hull, hull->firstclipnode, 0, 1, start_l, end_l, &trace);
 
 
 	// rotate endpos back to world frame of reference
@@ -864,10 +872,12 @@ void SV_ClipToLinks ( areanode_t *node, moveclip_t *clip )
 				continue;	// don't clip against owner
 		}
 
+
 		if ((int)touch->v.flags & FL_MONSTER)
 			trace = SV_ClipMoveToEntity (touch, clip->start, clip->mins2, clip->maxs2, clip->end);
 		else
 			trace = SV_ClipMoveToEntity (touch, clip->start, clip->mins, clip->maxs, clip->end);
+
 		if (trace.allsolid || trace.startsolid ||
 		trace.fraction < clip->trace.fraction)
 		{
@@ -937,7 +947,7 @@ trace_t SV_Move (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int type, e
 
 	memset ( &clip, 0, sizeof ( moveclip_t ) );
 
-// clip to world
+	// clip to world
 	clip.trace = SV_ClipMoveToEntity ( sv.edicts, start, mins, maxs, end );
 
 	clip.start = start;

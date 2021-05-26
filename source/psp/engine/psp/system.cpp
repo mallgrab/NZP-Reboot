@@ -44,9 +44,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <psppower.h>
 #include <psprtc.h>
 
-#ifdef PROFILE
 #include <pspprof.h>
-#endif
 
 extern "C"
 {
@@ -418,6 +416,7 @@ void Sys_Quit (void)
     gprof_cleanup();
 #endif
 	// Exit.
+	gprof_cleanup();
 	sceKernelExitGame();
 }
 

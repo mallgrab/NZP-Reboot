@@ -18,7 +18,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#define CONSOLE_DEBUG 0
+#define CONSOLE_DEBUG 1
 
 #include <stdexcept>
 #include <vector>
@@ -511,7 +511,6 @@ void ShutdownExtModules (void)
 
 int main(int argc, char *argv[])
 {
-#ifdef KERNEL_MODE
 	// Load the network modules
 
     	// create user thread, tweek stack size here if necessary
@@ -529,7 +528,6 @@ int main(int argc, char *argv[])
 
 int user_main(SceSize argc, void* argp)
 	{
-#endif
 	// Set up the callback thread, this is not appropriate for use with
 	// the loader, so don't bother calling it as it apparently seems to
 	// cause problems with firmware 2.0+
@@ -689,6 +687,7 @@ int user_main(SceSize argc, void* argp)
 			const float			deltaSeconds	= deltaTicks * oneOverTickRate;
 
 			// Check the battery status.
+			
 			battery::check();
 
 			// Run the frame.

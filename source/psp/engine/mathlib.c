@@ -20,6 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // mathlib.c -- math primitives
 
 #include <math.h>
+#include <pspfpu.h>
 #include "quakedef.h"
 
 #ifdef PSP_VFPU
@@ -503,7 +504,7 @@ void vectoangles (vec3_t vec, vec3_t ang)
 			yaw += 360;
 
 		#ifdef PSP_VFPU
-		forward = vfpu_sqrtf (vec[0] * vec[0] + vec[1] * vec[1]);
+		forward = sqrtf (vec[0] * vec[0] + vec[1] * vec[1]);
 		pitch = vfpu_atan2f (vec[2], forward) * 180 / M_PI;
 		#else
 		forward = sqrt (vec[0] * vec[0] + vec[1] * vec[1]);
@@ -561,11 +562,11 @@ void AngleVectors (vec3_t angles, vec3_t forward, vec3_t right, vec3_t up)
 
 float VectorLength (vec3_t v)
 {
-	#ifdef PSP_VFPU
-	return vfpu_sqrtf(DotProduct(v, v));
-	#else
-	return sqrtf(DotProduct(v, v));
-	#endif
+	//#ifdef PSP_VFPU
+	//return vfpu_sqrtf(DotProduct(v, v));
+	//#else
+	return pspFpuSqrt(DotProduct(v, v));
+	//#endif
 }
 
 int VectorCompare (vec3_t v1, vec3_t v2)
@@ -620,13 +621,18 @@ void CrossProduct (vec3_t v1, vec3_t v2, vec3_t cross)
 	cross[2] = v1[0]*v2[1] - v1[1]*v2[0];
 }
 
+inline float pspFpuSqrt(float fs)
+{
+	return (__builtin_allegrex_sqrt_s(fs));
+}
+
 vec_t Length(vec3_t v)
 {
-	#ifdef PSP_VFPU
-	return vfpu_sqrtf(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
-	#else
-	return sqrtf(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
-	#endif
+	//#ifdef PSP_VFPU
+	//return vfpu_sqrtf(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+	//#else
+	return pspFpuSqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+	//#endif
 }
 
 float VecLength2(vec3_t v1, vec3_t v2)
@@ -638,11 +644,11 @@ float VecLength2(vec3_t v1, vec3_t v2)
 
 float VectorNormalize (vec3_t v)
 {
-	#ifdef PSP_VFPU
-	float length = vfpu_sqrtf(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
-	#else
-	float length = sqrtf(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
-	#endif
+	//#ifdef PSP_VFPU
+	//float length = vfpu_sqrtf(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+	//#else
+	float length = pspFpuSqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+	//#endif
 
 	if (length)
 	{

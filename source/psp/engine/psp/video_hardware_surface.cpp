@@ -912,20 +912,22 @@ void R_RenderBrushPoly (msurface_t *fa)
 	}
 
 	t = R_TextureAnimation (fa->texinfo->texture);
-	GL_Bind (t->gl_texturenum);
+	//GL_Bind (t->gl_texturenum);
 
 	if (fa->flags & SURF_DRAWTURB)
 	{	// warp texture, no lightmaps
 		EmitWaterPolys (fa);
 		return;
 	}
-	if (!Q_strncmp(fa->texinfo->texture->name,"{",1)) // Halflife Alpha
-	{
+
+	//if (!Q_strncmp(fa->texinfo->texture->name,"{",1)) // Halflife Alpha
+	//{
 		sceGuEnable(GU_ALPHA_TEST);
 		sceGuAlphaFunc(GU_GREATER, 0xaa, 0xff);
 		sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
-	}
+	//}
 
+	/*
 	if (!Q_strncmp(fa->texinfo->texture->name,"light",5)) // Lights
 	{
 		DrawGLPoly (fa->polys);
@@ -941,16 +943,19 @@ void R_RenderBrushPoly (msurface_t *fa)
 	{
 		return;
 	}
+	*/
 
 	if (fa->flags & SURF_UNDERWATER)
 		DrawGLWaterPoly (fa->polys);
-	else
-		DrawGLPoly (fa->polys);
+	//else
+	//	DrawGLPoly (fa->polys);
 
+	/*
 	if (!Q_strncmp(fa->texinfo->texture->name,"glass",5)) // Glass
 	{
 		EmitReflectivePolys (fa);
 	}
+	*/
 
 	// add the poly to the proper lightmap chain
 	fa->polys->chain = lightmap_polys[fa->lightmaptexturenum];
@@ -1568,7 +1573,7 @@ void R_DrawWorld (void)
 	R_ClearSkyBox ();
 
 
-	R_RecursiveWorldNode (cl.worldmodel->nodes);
+	//R_RecursiveWorldNode (cl.worldmodel->nodes);
 
 	DrawTextureChains ();
 

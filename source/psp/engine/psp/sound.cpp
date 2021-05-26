@@ -144,7 +144,7 @@ qboolean SNDDMA_Init(void)
 
 	// Set the channel callback.
 	// Sound effects use channel 0, CD audio uses channel 1.
-	pspAudioSetChannelCallback(0, fillOutputBuffer, 0);
+	//pspAudioSetChannelCallback(0, fillOutputBuffer, 0);
 
 	return qtrue;
 }

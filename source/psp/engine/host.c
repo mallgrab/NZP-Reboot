@@ -542,7 +542,7 @@ qboolean Host_FilterTime (float time)
 		return false;		// framerate is too high
 */
 
-   if (cl_maxfps.value < 1) Cvar_SetValue("cl_maxfps", 30);
+   if (cl_maxfps.value < 1) Cvar_SetValue("cl_maxfps", 60);
    if (!cls.timedemo && realtime - oldrealtime < 1.0/cl_maxfps.value)
 		return false;		// framerate is too high
 

@@ -20,6 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 // screen.c -- master for refresh, status bar, console, chat, notify, etc
+#include "iridlibs/perflib.h"
 
 extern "C"
 {
@@ -705,6 +706,28 @@ void SCR_DrawFPS (void)
 	y = 0 ;
 
 	Draw_ColoredString(x, y, st, 255, 255, 255, 255, 1);
+
+
+	sprintf(st, "%4i world poly\n",  c_brush_polys);
+	Draw_ColoredString(x, 10, st, 255, 255, 255, 255, 1);
+
+	sprintf(st, "%4i entity poly\n",  c_alias_polys);
+	Draw_ColoredString(x, 20, st, 255, 255, 255, 255, 1);
+
+	//sprintf(st, "%4i CPU Percentage\n", (int)PFL_GetCPUPercentage()/(1000/lastfps));
+	sprintf(st, "%4i CPU Percentage\n", (int)PFL_GetCPUPercentage());
+	Draw_ColoredString(x, 30, st, 255, 255, 255, 255, 1);
+
+	//sprintf(st, "%4i GPU Percentage\n", (int)PFL_GetGPUPercentage()/(1000/lastfps));
+	sprintf(st, "%4i GPU Percentage\n", (int)PFL_GetGPUPercentage());
+	Draw_ColoredString(x, 40, st, 255, 255, 255, 255, 1);
+
+	sprintf(st, "%4i CPU Time (ms)\n", (int)PFL_GetCPUTime());
+	Draw_ColoredString(x, 50, st, 255, 255, 255, 255, 1);
+
+	sprintf(st, "%4i GPU Time (ms)\n", (int)PFL_GetGPUTime());
+	Draw_ColoredString(x, 60, st, 255, 255, 255, 255, 1);
+	
 
 	game_fps = lastfps;
 }

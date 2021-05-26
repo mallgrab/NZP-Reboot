@@ -1111,8 +1111,8 @@ void PF_findradius (void)
 			continue;
 		for (j=0 ; j<3 ; j++)
 			eorg[j] = org[j] - (ent->v.origin[j] + (ent->v.mins[j] + ent->v.maxs[j])*0.5);
-		if (Length(eorg) > rad)
-			continue;
+		//if (Length(eorg) > rad)	// Gets slow after zombies start moving.
+		//	continue;
 
 		ent->v.chain = EDICT_TO_PROG(chain);
 		chain = ent;
