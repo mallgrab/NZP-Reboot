@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <math.h>
 #include <psptypes.h>
+#include <pspfpu.h>
 
 #ifdef PSP_VFPU
 #include <pspmath.h>
@@ -39,7 +40,7 @@ namespace quake
 
 		static inline void normalise(ScePspFVector4* v)
 		{
-			const float scale = 1.0f / sqrtf(dot(*v, *v));
+			const float scale = 1.0f / pspFpuSqrt(dot(*v, *v));
 
 			v->x *= scale;
 			v->y *= scale;

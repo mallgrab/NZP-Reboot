@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "psp/module.h"
 #include <pspge.h>
 #include <pspsysevent.h>
+#include "benchmark.h"
 
 /*
 
@@ -641,7 +642,6 @@ void _Host_Frame (float time)
 	{
 		return;			// don't run too fast, or packets will flood out
 	}
-
 // get new key events
 	Sys_SendKeyEvents ();
 
@@ -672,7 +672,6 @@ void _Host_Frame (float time)
 // client operations
 //
 //-------------------
-
 // if running the server remotely, send intentions now after
 // the incoming messages have been read
 	if (!sv.active)
@@ -688,7 +687,10 @@ void _Host_Frame (float time)
 // update video
 	if (host_speeds.value)
 		time1 = Sys_FloatTime ();
+
+
 	SCR_UpdateScreen ();
+
 	if (host_speeds.value)
 		time2 = Sys_FloatTime ();
 // update audio
@@ -706,6 +708,7 @@ void _Host_Frame (float time)
 		CDAudio_Update();
 	//	bmg_type_changed = false;
 	//}
+
 
 	if (host_speeds.value)
 	{

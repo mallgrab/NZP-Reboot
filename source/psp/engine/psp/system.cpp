@@ -45,6 +45,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <psprtc.h>
 
 #include <pspprof.h>
+#include <psploadexec_kernel.h>
 
 extern "C"
 {
@@ -417,6 +418,7 @@ void Sys_Quit (void)
 #endif
 	// Exit.
 	gprof_cleanup();
+	//sceKernelLoadExecVSHMs2("EBOOT.PBP", NULL);
 	sceKernelExitGame();
 }
 

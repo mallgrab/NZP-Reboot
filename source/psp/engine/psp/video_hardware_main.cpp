@@ -31,6 +31,7 @@ float TraceLine (vec3_t start, vec3_t end, vec3_t impact, vec3_t normal);
 #include "video_hardware_hlmdl.h"
 #include <pspgu.h>
 #include <pspgum.h>
+#include "benchmark.h"
 
 #include "clipping.hpp"
 
@@ -1128,10 +1129,10 @@ void GL_DrawAliasFrame (aliashdr_t *paliashdr, int pose1, int pose2, float blend
 		}
 
 		// Allocate memory for one polygon
-		//vertex* const out = static_cast<vertex*>(sceGuGetMemory(sizeof(vertex) * count));
+		vertex* const out = static_cast<vertex*>(sceGuGetMemory(sizeof(vertex) * count));
 
 		// Set each vertex of the polygon with correct data
-		/*
+
 		for (int vertex_index = 0; vertex_index < count; ++vertex_index)
 		{
 			out[vertex_index].u = ((float *)order)[0];
@@ -1185,7 +1186,7 @@ void GL_DrawAliasFrame (aliashdr_t *paliashdr, int pose1, int pose2, float blend
 		
 		// Send one polygon to render
 		sceGuDrawArray(prim, GU_TEXTURE_32BITF | GU_VERTEX_32BITF | GU_COLOR_8888, count, 0, out);
-		*/
+
 	}
 
 	if(r_showtris.value)
@@ -2220,15 +2221,16 @@ void R_DrawAliasModel (entity_t *e)
 	int			anim;
 	bool 		force_fullbright, additive;
 
-        clmodel = e->model;
+    clmodel = e->model;
 
 	VectorAdd (e->origin, clmodel->mins, mins);
 	VectorAdd (e->origin, clmodel->maxs, maxs);
 
 	if (R_CullBox(mins, maxs))
+	{
 		return;
+	}
 
-	//=============================================================================================== 97% at this point
 	if(ISADDITIVE(e))
 	{
 		float deg = e->renderamt;
@@ -2354,16 +2356,18 @@ void R_DrawAliasModel (entity_t *e)
 	//
 	// draw all the triangles
 	//
-	sceGumPushMatrix();
+
+	/*
+	sceGumPushMatrix();	
 
 	R_InterpolateEntity(e,0);
 	
 	//blubs disabled this
-	/*if (r_i_model_transform.value)
-		R_BlendedRotateForEntity (e, 0);
-	else
-		R_RotateForEntity (e, 0);
-	*/
+	//if (r_i_model_transform.value)
+	//	R_BlendedRotateForEntity (e, 0);
+	//else
+	//	R_RotateForEntity (e, 0);
+	
 	
 	const ScePspFVector3 translation =
 	{
@@ -2376,6 +2380,8 @@ void R_DrawAliasModel (entity_t *e)
 		paliashdr->scale[0], paliashdr->scale[1], paliashdr->scale[2]
 	};
 	sceGumScale(&scaling);
+
+	*/
 
 	//============================================================================================================================= 83% at this point
 
@@ -2415,6 +2421,7 @@ void R_DrawAliasModel (entity_t *e)
 
 	IgnoreInterpolatioFrame(e, paliashdr);
 
+	
 	if (specChar == '#')//Zombie body
 	{
 		switch(e->skinnum)
@@ -2445,6 +2452,12 @@ void R_DrawAliasModel (entity_t *e)
 
 	//===================================================================================================== 80% at this point
 	//Rendering block
+
+	//startBM();
+		//R_SetupAliasFrame (e->frame, paliashdr, e, e->angles[0], e->angles[1]);
+	//stopBM();
+
+	/*
 	if (r_i_model_animation.value)
 	{
 		R_SetupAliasFrame (e->frame, paliashdr, e, e->angles[0], e->angles[1]);
@@ -2476,6 +2489,8 @@ void R_DrawAliasModel (entity_t *e)
 		else
 			R_SetupAliasFrame (e->frame, paliashdr, e, e->angles[0], e->angles[1]);
 	}
+	*/
+
 	sceGumPopMatrix();
 	sceGumUpdateMatrix();
 	
@@ -4134,7 +4149,7 @@ void R_RenderScene (void)
 	
 	// drawentitiesonlist
 	// if (r_drawentities.value) {
-	if (0) {
+	if (1) {
 
 		// draw sprites seperately, because of alpha blending
 		for (i=0 ; i<cl_numvisedicts ; i++)
@@ -4156,7 +4171,7 @@ void R_RenderScene (void)
 			switch (currententity->model->type) {
 				case mod_alias:
 					if (qmb_initialized && SetFlameModelState() == -1) continue;
-					
+
 					if (currententity->model->aliastype == ALIASTYPE_MD2)
 						R_DrawMD2Model(currententity);
 					else {

@@ -556,7 +556,7 @@ void EmitSkyPolys (msurface_t *fa)
 			VectorSubtract(src->xyz, r_origin, dir);
 			dir[2] *= 3;	// flatten the sphere
 
-			const float length = 6 * 63 / sqrtf(DotProduct(dir, dir));
+			const float length = 6 * 63 / pspFpuSqrt(DotProduct(dir, dir));
 
             dir[0] *= length;
 			dir[1] *= length;
@@ -720,7 +720,7 @@ void EmitReflectivePolys (msurface_t *fa)
 			VectorSubtract(src->xyz, r_origin, dir);
 			dir[2] *= 3;	// flatten the sphere
 
-			const float length = 6 * 63 / sqrtf(DotProduct(dir, dir));
+			const float length = 6 * 63 / pspFpuSqrt(DotProduct(dir, dir));
 
 			dir[0] *= length;
 			dir[1] *= length;

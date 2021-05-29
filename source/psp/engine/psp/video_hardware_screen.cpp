@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 // screen.c -- master for refresh, status bar, console, chat, notify, etc
 #include "iridlibs/perflib.h"
+#include "benchmark.h"
 
 extern "C"
 {
@@ -727,6 +728,9 @@ void SCR_DrawFPS (void)
 
 	sprintf(st, "%4i GPU Time (ms)\n", (int)PFL_GetGPUTime());
 	Draw_ColoredString(x, 60, st, 255, 255, 255, 255, 1);
+
+	sprintf(st, "%4llu BM Average (ms)\n", getAverage());
+	Draw_ColoredString(x, 70, st, 255, 255, 255, 255, 1);
 	
 
 	game_fps = lastfps;
@@ -1365,6 +1369,7 @@ void SCR_UpdateScreen (void)
 	//}
 
 	GL_BeginRendering (&glx, &gly, &glwidth, &glheight);
+
 	//
 	// determine size of refresh window
 	//

@@ -643,8 +643,10 @@ qboolean SV_RecursiveHullCheck (hull_t *hull, int num, float p1f, float p2f, vec
 	{
 		t1 = triVec3Dot (plane->normal, p1) - plane->dist;
 		t2 = triVec3Dot (plane->normal, p2) - plane->dist;
+		
 		//t1 = DotProduct (plane->normal, p1) - plane->dist;
 		//t2 = DotProduct (plane->normal, p2) - plane->dist;
+		
 	}
 
 #if 1
@@ -659,7 +661,7 @@ qboolean SV_RecursiveHullCheck (hull_t *hull, int num, float p1f, float p2f, vec
 		return SV_RecursiveHullCheck (hull, node->children[1], p1f, p2f, p1, p2, trace);
 #endif
 
-// put the crosspoint DIST_EPSILON pixels on the near side
+	// put the crosspoint DIST_EPSILON pixels on the near side
 	if (t1 < 0)
 		frac = (t1 + DIST_EPSILON)/(t1-t2);
 	else
@@ -670,20 +672,20 @@ qboolean SV_RecursiveHullCheck (hull_t *hull, int num, float p1f, float p2f, vec
 		frac = 1;
 
 	midf = p1f + (p2f - p1f)*frac;
-	triVec3Lerp(mid, p1, p2, frac);
+	//triVec3Lerp(mid, p1, p2, frac);
 	
-	//for (i=0 ; i<3 ; i++)
-	//	mid[i] = p1[i] + frac*(p2[i] - p1[i]);
+	for (i=0 ; i<3 ; i++)
+		mid[i] = p1[i] + frac*(p2[i] - p1[i]);
 
 	side = (t1 < 0);
 
-// move up to the node
+	// move up to the node
 	if (!SV_RecursiveHullCheck (hull, node->children[side], p1f, midf, p1, mid, trace) )
 		return false;
 
 	if (SV_HullPointContents (hull, node->children[side^1], mid)
 	!= CONTENTS_SOLID)
-// go past the node
+	// go past the node
 		return SV_RecursiveHullCheck (hull, node->children[side^1], midf, p2f, mid, p2, trace);
 
 	if (trace->allsolid)
@@ -717,7 +719,7 @@ qboolean SV_RecursiveHullCheck (hull_t *hull, int num, float p1f, float p2f, vec
 		}
 		midf = p1f + (p2f - p1f)*frac;
 		
-		triVec3Lerp(mid, p1, p2, frac);
+		//triVec3Lerp(mid, p1, p2, frac);
 		//for (i=0 ; i<3 ; i++)
 		//	mid[i] = p1[i] + frac*(p2[i] - p1[i]);
 	}
@@ -779,9 +781,8 @@ trace_t SV_ClipMoveToEntity (edict_t *ent, vec3_t start, vec3_t mins, vec3_t max
 	}
 
 
-// trace a line through the apropriate clipping hull
-	//SV_RecursiveHullCheck (hull, hull->firstclipnode, 0, 1, start_l, end_l, &trace);
-
+	// trace a line through the apropriate clipping hull
+	// SV_RecursiveHullCheck (hull, hull->firstclipnode, 0, 1, start_l, end_l, &trace);
 
 	// rotate endpos back to world frame of reference
 	if (ent->v.solid == SOLID_BSP &&

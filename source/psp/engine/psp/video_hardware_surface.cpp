@@ -117,11 +117,11 @@ void R_AddDynamicLights (msurface_t *surf)
 		rad = cl_dlights[lnum].radius;
 		dist = DotProduct (cl_dlights[lnum].origin, surf->plane->normal) -
 				surf->plane->dist;
-		#ifdef PSP_VFPU
-		rad -= vfpu_fabsf(dist);
-		#else
+		//#ifdef PSP_VFPU
+		//rad -= vfpu_fabsf(dist);
+		//#else
 		rad -= fabsf(dist);
-		#endif
+		//#endif
 		minlight = cl_dlights[lnum].minlight;
 		if (rad < minlight)
 			continue;
@@ -912,7 +912,7 @@ void R_RenderBrushPoly (msurface_t *fa)
 	}
 
 	t = R_TextureAnimation (fa->texinfo->texture);
-	//GL_Bind (t->gl_texturenum);
+	GL_Bind (t->gl_texturenum);
 
 	if (fa->flags & SURF_DRAWTURB)
 	{	// warp texture, no lightmaps
@@ -947,8 +947,8 @@ void R_RenderBrushPoly (msurface_t *fa)
 
 	if (fa->flags & SURF_UNDERWATER)
 		DrawGLWaterPoly (fa->polys);
-	//else
-	//	DrawGLPoly (fa->polys);
+	else
+		DrawGLPoly (fa->polys);
 
 	/*
 	if (!Q_strncmp(fa->texinfo->texture->name,"glass",5)) // Glass
@@ -1573,7 +1573,7 @@ void R_DrawWorld (void)
 	R_ClearSkyBox ();
 
 
-	//R_RecursiveWorldNode (cl.worldmodel->nodes);
+	// R_RecursiveWorldNode (cl.worldmodel->nodes);
 
 	DrawTextureChains ();
 
@@ -1787,15 +1787,15 @@ static void BuildSurfaceDisplayList (msurface_t *fa)
 
 			// skip co-linear points
 			#define COLINEAR_EPSILON 0.001
-			#if PSP_VFPU
-			if ((vfpu_fabsf( v1[0] - v2[0] ) <= COLINEAR_EPSILON) &&
-				(vfpu_fabsf( v1[1] - v2[1] ) <= COLINEAR_EPSILON) &&
-				(vfpu_fabsf( v1[2] - v2[2] ) <= COLINEAR_EPSILON))
-			#else
+			//#if PSP_VFPU
+			//if ((vfpu_fabsf( v1[0] - v2[0] ) <= COLINEAR_EPSILON) &&
+			//	(vfpu_fabsf( v1[1] - v2[1] ) <= COLINEAR_EPSILON) &&
+			//	(vfpu_fabsf( v1[2] - v2[2] ) <= COLINEAR_EPSILON))
+			//#else
 			if ((fabsf( v1[0] - v2[0] ) <= COLINEAR_EPSILON) &&
 				(fabsf( v1[1] - v2[1] ) <= COLINEAR_EPSILON) &&
 				(fabsf( v1[2] - v2[2] ) <= COLINEAR_EPSILON))
-			#endif
+			//#endif
 			{
 				for (j = i + 1; j < lnumverts; j = j + 1)
 				{

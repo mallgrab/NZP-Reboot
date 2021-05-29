@@ -361,3 +361,8 @@ typedef struct
 	vec3_t up;
 	qboolean ready;
 } soundstruct_t;
+
+inline float pspFpuSqrt(float fs)
+{
+	return (__builtin_allegrex_sqrt_s(fs));
+}

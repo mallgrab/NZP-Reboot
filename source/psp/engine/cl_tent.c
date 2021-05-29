@@ -483,7 +483,7 @@ void CL_UpdateTEnts (void)
 			if (yaw < 0)
 				yaw += 360;
 
-			forward = sqrtf (dist[0]*dist[0] + dist[1]*dist[1]);
+			forward = pspFpuSqrt (dist[0]*dist[0] + dist[1]*dist[1]);
 			pitch = (int) (atan2f(dist[2], forward) * 180 / M_PI);
 			if (pitch < 0)
 				pitch += 360;

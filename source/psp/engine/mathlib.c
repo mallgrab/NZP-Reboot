@@ -21,6 +21,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <math.h>
 #include <pspfpu.h>
+#include <openTri/triVMath_vfpu.h>
+#include "benchmark.h"
 #include "quakedef.h"
 
 #ifdef PSP_VFPU
@@ -126,18 +128,18 @@ void PerpendicularVector( vec3_t dst, const vec3_t src )
 	*/
 	for ( pos = 0, i = 0; i < 3; i++ )
 	{
-		#ifdef PSP_VFPU
-		if ( vfpu_fabsf( src[i] ) < minelem )
-		#else
+		//#ifdef PSP_VFPU
+		//if ( vfpu_fabsf( src[i] ) < minelem )
+		//#else
 		if ( fabsf( src[i] ) < minelem )
-		#endif
+		//#endif
 		{
 			pos = i;
-			#ifdef PSP_VFPU	
-			minelem = vfpu_fabsf( src[i] );
-			#else
+			//#ifdef PSP_VFPU	
+			//minelem = vfpu_fabsf( src[i] );
+			//#else
 			minelem = fabsf( src[i] );
-			#endif
+			//#endif
 		}
 	}
 	tempvec[0] = tempvec[1] = tempvec[2] = 0.0F;
@@ -504,7 +506,7 @@ void vectoangles (vec3_t vec, vec3_t ang)
 			yaw += 360;
 
 		#ifdef PSP_VFPU
-		forward = sqrtf (vec[0] * vec[0] + vec[1] * vec[1]);
+		forward = pspFpuSqrt (vec[0] * vec[0] + vec[1] * vec[1]);
 		pitch = vfpu_atan2f (vec[2], forward) * 180 / M_PI;
 		#else
 		forward = sqrt (vec[0] * vec[0] + vec[1] * vec[1]);
@@ -573,11 +575,20 @@ int VectorCompare (vec3_t v1, vec3_t v2)
 {
 	int		i;
 
+
+	vec3_t tmp;
+	if(triVec3Sum(triVec3Sub(tmp, v1, v2)))
+		return 0;
+
+	return 1;
+
+	/*
 	for (i=0 ; i<3 ; i++)
 		if (v1[i] != v2[i])
 			return 0;
 
 	return 1;
+	*/
 }
 
 void VectorMA (vec3_t veca, float scale, vec3_t vecb, vec3_t vecc)
@@ -621,18 +632,13 @@ void CrossProduct (vec3_t v1, vec3_t v2, vec3_t cross)
 	cross[2] = v1[0]*v2[1] - v1[1]*v2[0];
 }
 
-inline float pspFpuSqrt(float fs)
-{
-	return (__builtin_allegrex_sqrt_s(fs));
-}
-
 vec_t Length(vec3_t v)
 {
 	//#ifdef PSP_VFPU
 	//return vfpu_sqrtf(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
-	//#else
-	return pspFpuSqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
 	//#endif
+
+	return pspFpuSqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
 }
 
 float VecLength2(vec3_t v1, vec3_t v2)

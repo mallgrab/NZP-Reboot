@@ -5452,7 +5452,9 @@ void M_Draw (void)
 		break;
 
 	case m_start:
-		M_Start_Menu_Draw();
+		Cbuf_AddText ("maxplayers 1\n");
+		Cbuf_AddText ("map ndu\n");
+		//M_Start_Menu_Draw();
 		break;
 
 	case m_paused_menu:

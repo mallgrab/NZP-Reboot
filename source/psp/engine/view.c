@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "quakedef.h"
 #include <pspgu.h>
+#include "benchmark.h"
 
 #ifdef PSP_VFPU
 #include <pspmath.h>
@@ -307,11 +308,11 @@ void V_DriftPitch (void)
 // don't count small mouse motion
 	if (cl.nodrift)
 	{
-		#ifdef PSP_VFPU
-		if ( vfpu_fabsf(cl.cmd.forwardmove) < cl_forwardspeed)
-		#else
+		//#ifdef PSP_VFPU
+		//if ( vfpu_fabsf(cl.cmd.forwardmove) < cl_forwardspeed)
+		//#else
 		if ( fabsf(cl.cmd.forwardmove) < cl_forwardspeed)
-		#endif
+		//#endif
 			cl.driftmove = 0;
 		else
 			cl.driftmove += host_frametime;
@@ -1613,7 +1614,8 @@ void V_RenderView (void)
 	if (con_forcedup)
 		return;
 
-// don't allow cheats in multiplayer
+	// don't allow cheats in multiplayer
+	
 	if (cl.maxclients > 1)
 	{
 		Cvar_Set ("scr_ofsx", "0");
@@ -1633,7 +1635,10 @@ void V_RenderView (void)
 		}
 	}
 	R_PushDlights ();
-
+	
+	R_RenderView ();
+	
+	/*
 	if (lcd_x.value)//blubs: psp doesn't appear to use these
 	{
 		//
@@ -1667,6 +1672,7 @@ void V_RenderView (void)
 	{
 		R_RenderView ();
 	}
+	*/
 
 	//Blub's debug tracemove: to use: uncomment this, go above and uncomment the functions used above this one, and go in qc and make the player spawn an entity of .enemy
 	//tryLine();

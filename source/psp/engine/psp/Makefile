@@ -35,6 +35,7 @@ COMMON_OBJS = \
 	cd.o \
 	mp3.o \
 	Random.o \
+	benchmark.o \
 	\
 	../chase.o \
 	../cl_demo.o \
@@ -116,7 +117,7 @@ NET_LIBS    = -lpspwlan -lpspnet_adhoc -lpspnet_adhocctl
 STD_LIBS	= -lstdc++ -lm -lc
 LIBS		= $(GU_LIBS) $(AUDIO_LIBS) $(MISC_LIBS) $(STD_LIBS) $(NET_LIBS) -lpspprof
 
-CFLAGS = -I/home/user/Desktop/NZP-Reboot/source/psp/libpspmath/ -ffast-math -pg -g -O3 -G0 -Wall -Did386="0" -DPSP $(MODE) $(HARDWARE_VIDEO_ONLY_FLAGS) -DSWIZZLE32 -DSLIM -DPSP_MP3_HWDECODE -DFULLBRIGHT -DHL_RENDER -Wno-strict-aliasing -DPSP_VFPU
+CFLAGS = -I/home/user/Desktop/NZP-Reboot/source/psp/libpspmath/ -ffast-math -g -O3 -G0 -Wall -Did386="0" -DPSP $(MODE) $(HARDWARE_VIDEO_ONLY_FLAGS) -DSWIZZLE32 -DSLIM -DPSP_MP3_HWDECODE -DFULLBRIGHT -DHL_RENDER -Wno-strict-aliasing -DPSP_VFPU
 CXXFLAGS = -fno-rtti -Wcast-qual -Wno-write-strings -Wno-sign-compare -Wno-strict-aliasing
 ASFLAGS = $(CFLAGS) -c
 
@@ -127,6 +128,7 @@ CC       = vs-psp-gcc
 CXX      = vs-psp-g++
 endif
 
+	#mv EBOOT.PBP ../../../../psp/nzportable/EBOOT.PBP
 install: EBOOT.PBP
-	mv EBOOT.PBP ../../../../psp/nzportable/EBOOT.PBP
+	bash ./ftp.sh
 	@echo DONE

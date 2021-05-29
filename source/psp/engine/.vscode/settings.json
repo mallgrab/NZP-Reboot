@@ -4,6 +4,18 @@
         "*.tcc": "cpp",
         "string_view": "cpp",
         "type_traits": "cpp",
-        "cmath": "c"
+        "cmath": "c",
+        "memory": "cpp",
+        "fstream": "cpp",
+        "benchmark.h": "c",
+        "psptypes.h": "c",
+        "psprtc.h": "c",
+        "istream": "cpp",
+        "trivmath_vfpu.h": "c",
+        "pspfpu.h": "c",
+        "pspvfpu.h": "c",
+        "quakedef.h": "c",
+        "math.h": "c",
+        "pspmath.h": "c"
     }
 }

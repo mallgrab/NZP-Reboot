@@ -35,6 +35,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <pspsdk.h>
 #include <pspge.h>
 #include <pspsysevent.h>
+#include "benchmark.h"
 
 extern "C"
 {
@@ -691,7 +692,9 @@ int user_main(SceSize argc, void* argp)
 			battery::check();
 
 			// Run the frame.
+
 			Host_Frame(deltaSeconds);
+
 			// Remember the time for next frame.
 			lastTicks = ticks;
 
