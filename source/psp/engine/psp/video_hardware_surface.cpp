@@ -1572,8 +1572,8 @@ void R_DrawWorld (void)
 
 	R_ClearSkyBox ();
 
-
-	// R_RecursiveWorldNode (cl.worldmodel->nodes);
+// PERF: Slow, draws brushes.
+// R_RecursiveWorldNode (cl.worldmodel->nodes);
 
 	DrawTextureChains ();
 
