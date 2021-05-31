@@ -24,6 +24,7 @@ extern "C"
 {
 #include "../quakedef.h"
 #include "iridlibs/perflib.h"
+
 float TraceLine (vec3_t start, vec3_t end, vec3_t impact, vec3_t normal);
 }
 
@@ -32,6 +33,7 @@ float TraceLine (vec3_t start, vec3_t end, vec3_t impact, vec3_t normal);
 #include <pspgu.h>
 #include <pspgum.h>
 #include "benchmark.h"
+#include "guInternal.h"
 
 #include "clipping.hpp"
 
@@ -1185,7 +1187,13 @@ void GL_DrawAliasFrame (aliashdr_t *paliashdr, int pose1, int pose2, float blend
 		
 		
 		// Send one polygon to render
-		sceGuDrawArray(prim, GU_TEXTURE_32BITF | GU_VERTEX_32BITF | GU_COLOR_8888, count, 0, out);
+		//sceGuDrawArray(prim, GU_TEXTURE_32BITF | GU_VERTEX_32BITF | GU_COLOR_8888, count, 0, out);
+
+    	sendCommandi(18,GU_TEXTURE_32BITF | GU_VERTEX_32BITF | GU_COLOR_8888);
+  		sendCommandi(16,(((unsigned int)out) >> 8) & 0xf0000);
+  		sendCommandi(1,((unsigned int)out) & 0xffffff);
+
+  		sendCommandiStall(4,(prim << 16)|count);
 
 	}
 
@@ -1599,7 +1607,9 @@ void R_SetupAliasFrame (int frame, aliashdr_t *paliashdr, entity_t* e, float api
 	if (blend != 1)
 		lerping = true;
 
+	StartBM(&DrawAliasFrame);
 	GL_DrawAliasFrame (paliashdr, e->pose1, e->pose2, blend, apitch, ayaw, lerping);
+	StopBM(&DrawAliasFrame);
 }
 
 /*
@@ -2219,7 +2229,7 @@ void R_DrawAliasModel (entity_t *e)
 	int			anim;
 	bool 		force_fullbright, additive;
 
-    clmodel = e->model;
+        clmodel = e->model;
 
 	VectorAdd (e->origin, clmodel->mins, mins);
 	VectorAdd (e->origin, clmodel->maxs, maxs);
@@ -2267,7 +2277,9 @@ void R_DrawAliasModel (entity_t *e)
 	//ambientlight = shadelight = R_LightPoint (e->origin); // LordHavoc: original code, removed shadelight and ambientlight
 	
 // PERF: Drops performance after a few seconds.
-//	R_LightPoint(e->origin); // LordHavoc: lightcolor is all that matters from this
+	StartBM(&LightPoint);
+	R_LightPoint(e->origin); // LordHavoc: lightcolor is all that matters from this
+	StopBM(&LightPoint);
 
 	// LordHavoc: .lit support end
 
@@ -2358,7 +2370,9 @@ void R_DrawAliasModel (entity_t *e)
 	sceGumPushMatrix();	
 
 // PERF: Slow also after a while.
-//	R_InterpolateEntity(e,0);
+	StartBM(&InterpolateEntity);
+	R_InterpolateEntity(e,0);
+	StopBM(&InterpolateEntity);
 	
 	//blubs disabled this
 	//if (r_i_model_transform.value)
@@ -2450,7 +2464,7 @@ void R_DrawAliasModel (entity_t *e)
 	//Rendering block
 
 // PERF: Very slow.
-//R_SetupAliasFrame (e->frame, paliashdr, e, e->angles[0], e->angles[1]);
+	R_SetupAliasFrame (e->frame, paliashdr, e, e->angles[0], e->angles[1]);
 
 	/*
 	if (r_i_model_animation.value)

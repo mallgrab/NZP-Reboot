@@ -35,6 +35,7 @@ COMMON_OBJS = \
 	cd.o \
 	mp3.o \
 	Random.o \
+	guInternal.o \
 	benchmark.o \
 	\
 	../chase.o \

@@ -1,43 +1,42 @@
 #include "benchmark.h"
 
-u64 bm_first;
-u64 bm_last;
-u64 bm_time;
-u64 bm_highest;
-u64 bm_average;
-u64 bm_tmp;
-int iter = 20;
-
-void startBM() {
-    sceRtcGetCurrentTick(&bm_first);
+void StartBM(BM_Timer *t) {
+    sceRtcGetCurrentTick(&t->bm_first);
 }
 
-void stopBM() {
-    sceRtcGetCurrentTick(&bm_last);
-    bm_time = bm_last-bm_first;
+void StopBM(BM_Timer *t) {
+    sceRtcGetCurrentTick(&t->bm_last);
+    t->bm_time = t->bm_last-t->bm_first;
     
-    if (bm_highest < bm_time)
-        bm_highest = bm_time;
+    if (t->bm_highest < t->bm_time)
+        t->bm_highest = t->bm_time;
 }
 
-u64 getBM() {
-    return bm_time;
+u64 GetBM(BM_Timer *t) {
+    return t->bm_time;
 }
 
-u64 getHighest() {
-    return bm_highest;
+u64 GetHighest(BM_Timer *t) {
+    return t->bm_highest;
 }
 
-u64 getAverage() {
-    iter -= 1;
-    bm_tmp += bm_time;
+u64 GetAverage(BM_Timer *t) {
+    t->iter -= 1;
+    t->bm_tmp += t->bm_time;
 
-    if (iter < 0)
+    if (t->iter < 0)
     {
-        iter = 20;
-        bm_average = bm_tmp / 20;
-        bm_tmp = 0;
+        t->iter = 20;
+        t->bm_average = t->bm_tmp / 20;
+        t->bm_tmp = 0;
     }
 
-    return bm_average;
+    return t->bm_average;
 }
+
+BM_Timer LightPoint;
+BM_Timer FindRadiusPF;
+BM_Timer DrawAliasFrame;
+BM_Timer InterpolateEntity;
+BM_Timer RecursiveWorldNode;
+BM_Timer RecursiveHullCheck;

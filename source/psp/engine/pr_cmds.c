@@ -19,6 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "quakedef.h"
+#include "benchmark.h"
 
 #define PR_MAX_TEMPSTRING 2048	// 2001-10-25 Enhanced temp string handling by Maddes
 #define	RETURN_EDICT(e) (((int *)pr_globals)[OFS_RETURN] = EDICT_TO_PROG(e))
@@ -1103,6 +1104,7 @@ void PF_findradius (void)
 	rad = G_FLOAT(OFS_PARM1);
 
 	ent = NEXT_EDICT(sv.edicts);
+	StartBM(&FindRadiusPF);	
 	for (i=1 ; i<sv.num_edicts ; i++, ent = NEXT_EDICT(ent))
 	{
 		if (ent->free)
@@ -1111,13 +1113,15 @@ void PF_findradius (void)
 			continue;
 		for (j=0 ; j<3 ; j++)
 			eorg[j] = org[j] - (ent->v.origin[j] + (ent->v.mins[j] + ent->v.maxs[j])*0.5);
-		
-		//if (Length(eorg) > rad)	// Gets slow after zombies start moving.
-		//	continue;
+
+// PERF: Gets slow after zombies are starting to move.	
+		if (Length(eorg) > rad)
+			continue;
 
 		ent->v.chain = EDICT_TO_PROG(chain);
 		chain = ent;
 	}
+	StopBM(&FindRadiusPF);
 
 	RETURN_EDICT(chain);
 }

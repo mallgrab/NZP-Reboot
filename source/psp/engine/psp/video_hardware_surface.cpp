@@ -36,6 +36,7 @@ extern int LIGHTMAP_BYTES;
 
 #include "clipping.hpp"
 #include "video_hardware_fullbright.h"
+#include "benchmark.h"
 
 using namespace quake;
 
@@ -1573,7 +1574,9 @@ void R_DrawWorld (void)
 	R_ClearSkyBox ();
 
 // PERF: Slow, draws brushes.
-// R_RecursiveWorldNode (cl.worldmodel->nodes);
+	StartBM(&RecursiveWorldNode);
+ 	R_RecursiveWorldNode (cl.worldmodel->nodes);
+	StopBM(&RecursiveWorldNode);
 
 	DrawTextureChains ();
 

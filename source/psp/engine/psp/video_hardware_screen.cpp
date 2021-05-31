@@ -729,8 +729,26 @@ void SCR_DrawFPS (void)
 	sprintf(st, "%4i GPU Time (ms)\n", (int)PFL_GetGPUTime());
 	Draw_ColoredString(x, 60, st, 255, 255, 255, 255, 1);
 
-	sprintf(st, "%4llu BM Average (ms)\n", getAverage());
-	Draw_ColoredString(x, 70, st, 255, 255, 255, 255, 1);
+	//sprintf(st, "%4llu BM Average (ms)\n", getAverage());
+	sprintf(st, "%4llu LightPoint (ms)\n", GetAverage(&LightPoint));
+	Draw_ColoredString(x, 80, st, 255, 255, 255, 255, 1);
+
+	sprintf(st, "%4llu FindRadiusPF (ms)\n", GetAverage(&FindRadiusPF));
+	Draw_ColoredString(x, 90, st, 255, 255, 255, 255, 1);
+
+	sprintf(st, "%4llu DrawAliasFrame (ms)\n", GetAverage(&DrawAliasFrame));
+	Draw_ColoredString(x, 100, st, 255, 255, 255, 255, 1);
+
+	sprintf(st, "%4llu InterpolateEntity (ms)\n", GetAverage(&InterpolateEntity));
+	Draw_ColoredString(x, 110, st, 255, 255, 255, 255, 1);
+
+	sprintf(st, "%4llu RecursiveWorldNode (ms)\n", GetAverage(&RecursiveWorldNode));
+	Draw_ColoredString(x, 120, st, 255, 255, 255, 255, 1);
+
+	sprintf(st, "%4llu RecursiveHullCheck (ms)\n", GetAverage(&RecursiveHullCheck));
+	Draw_ColoredString(x, 130, st, 255, 255, 255, 255, 1);
+
+
 	
 
 	game_fps = lastfps;

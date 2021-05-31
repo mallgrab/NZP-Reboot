@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <openTri/triVMath_vfpu.h>
 #include "quakedef.h"
+#include "benchmark.h"
 
 /*#ifdef PSP_VFPU
 #include <pspmath.h>
@@ -782,7 +783,10 @@ trace_t SV_ClipMoveToEntity (edict_t *ent, vec3_t start, vec3_t mins, vec3_t max
 
 
 	// trace a line through the apropriate clipping hull
-	// SV_RecursiveHullCheck (hull, hull->firstclipnode, 0, 1, start_l, end_l, &trace);
+	StartBM(&RecursiveHullCheck);
+// PERF: Slow, lets entites move.	
+	SV_RecursiveHullCheck (hull, hull->firstclipnode, 0, 1, start_l, end_l, &trace);
+	StopBM(&RecursiveHullCheck);
 
 	// rotate endpos back to world frame of reference
 	if (ent->v.solid == SOLID_BSP &&
