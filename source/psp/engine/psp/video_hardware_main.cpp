@@ -1218,10 +1218,8 @@ void GL_DrawAliasInterpolatedFrame (aliashdr_t *paliashdr, int posenum, int oldp
 	}
 
 	lastposenum = posenum;
-	
 	interpolations = interp/r_ipolations.value;
-	int tempInter = currententity->interpolation;
-
+	verts = (trivertx_t *)((byte *)paliashdr + paliashdr->posedata);
 	oldverts = verts;
 	verts += posenum * paliashdr->poseverts;
 	if (oldposenum >= 0)
@@ -2225,11 +2223,9 @@ void R_DrawAliasModel (entity_t *e)
 
 	VectorAdd (e->origin, clmodel->mins, mins);
 	VectorAdd (e->origin, clmodel->maxs, maxs);
-
+	
 	if (R_CullBox(mins, maxs))
-	{
 		return;
-	}
 
 	if(ISADDITIVE(e))
 	{
@@ -2269,7 +2265,9 @@ void R_DrawAliasModel (entity_t *e)
 
 	// LordHavoc: .lit support begin
 	//ambientlight = shadelight = R_LightPoint (e->origin); // LordHavoc: original code, removed shadelight and ambientlight
-	R_LightPoint(e->origin); // LordHavoc: lightcolor is all that matters from this
+	
+// PERF: Drops performance after a few seconds.
+//	R_LightPoint(e->origin); // LordHavoc: lightcolor is all that matters from this
 
 	// LordHavoc: .lit support end
 
@@ -2357,10 +2355,10 @@ void R_DrawAliasModel (entity_t *e)
 	// draw all the triangles
 	//
 
-	/*
 	sceGumPushMatrix();	
 
-	R_InterpolateEntity(e,0);
+// PERF: Slow also after a while.
+//	R_InterpolateEntity(e,0);
 	
 	//blubs disabled this
 	//if (r_i_model_transform.value)
@@ -2381,7 +2379,6 @@ void R_DrawAliasModel (entity_t *e)
 	};
 	sceGumScale(&scaling);
 
-	*/
 
 	//============================================================================================================================= 83% at this point
 
@@ -2421,7 +2418,6 @@ void R_DrawAliasModel (entity_t *e)
 
 	IgnoreInterpolatioFrame(e, paliashdr);
 
-	
 	if (specChar == '#')//Zombie body
 	{
 		switch(e->skinnum)
@@ -2453,9 +2449,8 @@ void R_DrawAliasModel (entity_t *e)
 	//===================================================================================================== 80% at this point
 	//Rendering block
 
-	//startBM();
-		//R_SetupAliasFrame (e->frame, paliashdr, e, e->angles[0], e->angles[1]);
-	//stopBM();
+// PERF: Very slow.
+//R_SetupAliasFrame (e->frame, paliashdr, e, e->angles[0], e->angles[1]);
 
 	/*
 	if (r_i_model_animation.value)
@@ -2493,7 +2488,6 @@ void R_DrawAliasModel (entity_t *e)
 
 	sceGumPopMatrix();
 	sceGumUpdateMatrix();
-	
 	if (doZHack == 0 && specChar == '#')//if we're drawing zombie, also draw its limbs in one call
 	{
 		if(e->z_head)
@@ -2508,7 +2502,6 @@ void R_DrawAliasModel (entity_t *e)
 	sceGuDisable(GU_ALPHA_TEST);
 	sceGuTexFunc(GU_TFX_REPLACE , GU_TCC_RGBA);
 	sceGuShadeModel(GU_FLAT);
-
 	//Blubswillrule: disabled the next two calls, they look like duplicates
 	//sceGuShadeModel(GU_FLAT);
 	//sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGBA);
@@ -2531,6 +2524,7 @@ void R_DrawAliasModel (entity_t *e)
 		//sceGuBlendFunc(GU_ADD, GU_SRC_ALPHA, GU_ONE_MINUS_SRC_ALPHA, 0, 0);
 		//sceGuDisable (GU_BLEND);
 	}
+
 	sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGBA);
 	sceGuBlendFunc(GU_ADD, GU_SRC_ALPHA, GU_ONE_MINUS_SRC_ALPHA, 0, 0);
 	sceGuDisable(GU_BLEND);

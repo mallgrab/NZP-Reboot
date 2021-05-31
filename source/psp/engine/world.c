@@ -672,10 +672,10 @@ qboolean SV_RecursiveHullCheck (hull_t *hull, int num, float p1f, float p2f, vec
 		frac = 1;
 
 	midf = p1f + (p2f - p1f)*frac;
-	//triVec3Lerp(mid, p1, p2, frac);
+	triVec3Lerp(mid, p1, p2, frac);
 	
-	for (i=0 ; i<3 ; i++)
-		mid[i] = p1[i] + frac*(p2[i] - p1[i]);
+	//for (i=0 ; i<3 ; i++)
+	//	mid[i] = p1[i] + frac*(p2[i] - p1[i]);
 
 	side = (t1 < 0);
 
@@ -719,7 +719,7 @@ qboolean SV_RecursiveHullCheck (hull_t *hull, int num, float p1f, float p2f, vec
 		}
 		midf = p1f + (p2f - p1f)*frac;
 		
-		//triVec3Lerp(mid, p1, p2, frac);
+		triVec3Lerp(mid, p1, p2, frac);
 		//for (i=0 ; i<3 ; i++)
 		//	mid[i] = p1[i] + frac*(p2[i] - p1[i]);
 	}
