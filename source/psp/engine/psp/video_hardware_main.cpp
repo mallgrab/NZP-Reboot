@@ -1109,10 +1109,10 @@ void GL_DrawAliasFrame (aliashdr_t *paliashdr, int pose1, int pose2, float blend
 
 	while (1)
 	{
-		// count = amount of vertex per poly
+		// count = amount of verticies per poly
 		count = *order++;
 
-		// if we get 0 no more vertex left from model
+		// if we get 0 no more verticies left from the model to send to the gu
 		if (!count) break;
 
 		// convert count from negative to positive, why is count negative?
@@ -1126,7 +1126,6 @@ void GL_DrawAliasFrame (aliashdr_t *paliashdr, int pose1, int pose2, float blend
 			else
 			{
 				prim = GU_TRIANGLE_STRIP;
-				//prim = GU_TRIANGLES; //used for blubs' alternate BuildTris with one continual triangle list
 			}
 		}
 
@@ -1134,21 +1133,31 @@ void GL_DrawAliasFrame (aliashdr_t *paliashdr, int pose1, int pose2, float blend
 		vertex* const out = static_cast<vertex*>(sceGuGetMemory(sizeof(vertex) * count));
 
 		// Set each vertex of the polygon with correct data
-
 		for (int vertex_index = 0; vertex_index < count; ++vertex_index)
 		{
 			out[vertex_index].u = ((float *)order)[0];
 			out[vertex_index].v = ((float *)order)[1];
 			order += 2;
 
-	
+			// blend the vertex positions from each frame together
 			if (lerping)
 			{
 				d[0] = shadedots[verts2->lightnormalindex] - shadedots[verts1->lightnormalindex];
 				l = shadedots[verts1->lightnormalindex] + (blend * d[0]);
+				VectorSubtract(verts2->v, verts1->v, d);
+
+				out[vertex_index].x = verts1->v[0] + (blend * d[0]);
+				out[vertex_index].y = verts1->v[1] + (blend * d[1]);
+				out[vertex_index].z = verts1->v[2] + (blend * d[2]);
 			}
 			else
+			{
 				l = shadedots[verts1->lightnormalindex];
+				
+				out[vertex_index].x = verts1->v[0];
+				out[vertex_index].y = verts1->v[1];
+				out[vertex_index].z = verts1->v[2];
+			}
 
 			r = l * lightcolor[0];
 			g = l * lightcolor[1];
@@ -1160,24 +1169,6 @@ void GL_DrawAliasFrame (aliashdr_t *paliashdr, int pose1, int pose2, float blend
 				g = 1;
 			if(b > 1)
 				b = 1;
-
-
-			// blend the vertex positions from each frame together
-			if (lerping)
-			{
-				VectorSubtract(verts2->v, verts1->v, d);
-
-				out[vertex_index].x = verts1->v[0] + (blend * d[0]);
-				out[vertex_index].y = verts1->v[1] + (blend * d[1]);
-				out[vertex_index].z = verts1->v[2] + (blend * d[2]);
-			}
-			else
-			{
-				out[vertex_index].x = verts1->v[0];
-				out[vertex_index].y = verts1->v[1];
-				out[vertex_index].z = verts1->v[2];
-			}
-			
 			
 			out[vertex_index].color = GU_COLOR(r, g, b, 1.0f);
 
