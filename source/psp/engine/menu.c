@@ -5523,6 +5523,7 @@ void M_Draw (void)
 
 	case m_exit:
 		M_Exit_Draw ();
+		Sys_Quit();
 		break;
 
 	case m_serialconfig:
